@@ -3,6 +3,7 @@
 # Copyleft 2017 Simone Margaritelli
 # evilsocket@protonmail.com
 # http://www.evilsocket.net
+# Modded by @elkentaro to fit the HackChip Screen
 #
 # This file may be licensed under the terms of of the
 # GNU General Public License Version 3 (the ``GPL'').
@@ -18,6 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 import time
 import binascii
+from textwrap import wrap
 
 from terminaltables import SingleTable
 from bluepy.btle import BTLEException, Scanner, ScanEntry, DefaultDelegate
@@ -133,7 +135,9 @@ class ScanReceiver(DefaultDelegate):
 
         for ( tag, desc, val ) in dev.getScanData():
             if desc == 'Flags':
-                tdata.append([ 'Flags', self._parseFlags(val) ])
+
+                wrapped_string = '\n'.join(wrap(self._parseFlags(val), 60))
+                tdata.append([ 'Flags', wrapped_string])
 
             # short local name or complete local name
             elif tag in [8, 9]:
@@ -160,4 +164,3 @@ def start_scan(args):
         print "@ Scanning for %ds [%d dBm of sensitivity] ...\n" % ( args.timeout, args.sensitivity )
 
     return scanner.scan(args.timeout)
-
