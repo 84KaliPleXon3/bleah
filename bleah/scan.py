@@ -136,7 +136,7 @@ class ScanReceiver(DefaultDelegate):
         for ( tag, desc, val ) in dev.getScanData():
             if desc == 'Flags':
 
-                wrapped_string = '\n'.join(wrap(self._parseFlags(val), 60))
+                wrapped_string = '\n'.join(wrap(self._parseFlags(val), 21))
                 tdata.append([ 'Flags', wrapped_string])
 
             # short local name or complete local name
