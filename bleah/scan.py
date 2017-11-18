@@ -125,7 +125,7 @@ class ScanReceiver(DefaultDelegate):
 
         vendor = vendors.find(dev.addr)
         vlabel = yellow( vendor + ' ' ) if vendor is not None else '?'
-        clabel = green( u'\u2713' ) if dev.connectable else red( u'\u2715' )
+        clabel = green('yes') if dev.connectable else red( 'no' )
         dlabel = "(no data) " if not dev.scanData else ""
         title  = " %s (%s dBm) %s" % ( bold(dev.addr), dev.rssi, dlabel )
         tdata  = [
@@ -136,7 +136,7 @@ class ScanReceiver(DefaultDelegate):
         for ( tag, desc, val ) in dev.getScanData():
             if desc == 'Flags':
 
-                wrapped_string = '\n'.join(wrap(self._parseFlags(val), 21))
+                wrapped_string = '\n'.join(wrap(self._parseFlags(val), 45))
                 tdata.append([ 'Flags', wrapped_string])
 
             # short local name or complete local name
