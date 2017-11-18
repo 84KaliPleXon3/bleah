@@ -3,7 +3,7 @@
 # Copyleft 2017 Simone Margaritelli
 # evilsocket@protonmail.com
 # http://www.evilsocket.net
-#
+# Modded by @elkentaro to make it fit the HackChip Screen
 # This file may be licensed under the terms of of the
 # GNU General Public License Version 3 (the ``GPL'').
 #
@@ -44,31 +44,23 @@ def bold(s,close=True):
     return effect( s, 1, close )
 
 def print_sexy_banner():
-    banner = u"""
-          .                                                      .
-        .n                   .                 .                  n.
-  .   .dP                  dP                   9b                 9b.    .
- 4    qXb         .       dX    BLEAH v%s     Xb       .        dXp     t
-dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb
-9XXb._       _.dXXXXb dXXXXbo.                 .odXXXXb dXXXXb._       _.dXXP
- 9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP
-  `9XXXXXXXXXXXXXXXXXXXXX'~   ~`OOO8b   d8OOO'~   ~`XXXXXXXXXXXXXXXXXXXXXP'
-    `9XXXXXXXXXXXP' `9XX'    *     `98v8P'     *    `XXP' `9XXXXXXXXXXXP'
-        ~~~~~~~       9X.          .db|db.          .XP       ~~~~~~~
-                        )b.  .dbo.dP'`v'`9b.odb.  .dX(
-                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb.
-                     dXXXXXXXXXXXP'   .   `9XXXXXXXXXXXb
-                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb
-                    9XXb'   `XXXXXb.dX|Xb.dXXXXX'   `dXXP
-                     `'      9XXXXXX(   )XXXXXXP      `'
-                              XXXX X.`v'.X XXXX
-                              XP^X'`b   d'`X^XX
-                              X. 9  `   '  P )X
-                              `b  `       '  d'
-                               `             '"""
+    banner = """
+BLEAH v%s  for HACKCHIP
+  +-+-+-+-+-+
+  |B|L|E|A|H|
+  +-+-+-+-+-+
+          +-+
+          |4|
+          +-+
+   +-+-+-+-+-+-+-+-+
+   |H|a|c|k|C|h|i|p|
+   +-+-+-+-+-+-+-+-+
+"""
 
     print bold( blue( banner % VERSION ) )
-    print "                " + blue("Made with ") + red(u"\u2764") + blue(" by Simone 'evilsocket' Margaritelli") 
+    print blue("   Made with ") + red(u"\u2764") + blue(" by Simone 'evilsocket' Margaritelli") 
+    print blue("   Modded by ") + green(u"\u2660") + blue(" elkentaro for HackChip") 
     print "\n\n"
+
 
 
