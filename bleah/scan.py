@@ -1,3 +1,4 @@
+
 # This file is part of BLEAH.
 #
 # Copyleft 2017 Simone Margaritelli
@@ -18,7 +19,9 @@
 # or write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 import time
+from datetime import datetime
 import binascii
+import csv
 from textwrap import wrap
 
 from terminaltables import SingleTable
@@ -28,139 +31,151 @@ import bleah.vendors as vendors
 from bleah.swag import *
 
 class SmarterScanner(Scanner):
-    def __init__(self,mac=None,iface=0):
-        Scanner.__init__(self,iface)
-        self.mac = mac
+def __init__(self,mac=None,iface=0):
+Scanner.__init__(self,iface)
+self.mac = mac
 
-    def _find_or_create( self, addr ):
-        if addr in self.scanned:
-            dev = self.scanned[addr]
-        else:
-            dev = ScanEntry(addr, self.iface)
-            self.scanned[addr] = dev
+def _find_or_create( self, addr ):
+if addr in self.scanned:
+dev = self.scanned[addr]
+else:
+dev = ScanEntry(addr, self.iface)
+self.scanned[addr] = dev
 
-        return dev
+return dev
 
-    def _decode_address( self, resp ):
-        addr = binascii.b2a_hex(resp['addr'][0]).decode('utf-8')
-        return ':'.join([addr[i:i+2] for i in range(0,12,2)])
+def _decode_address( self, resp ):
+addr = binascii.b2a_hex(resp['addr'][0]).decode('utf-8')
+return ':'.join([addr[i:i+2] for i in range(0,12,2)])
 
-    def process(self, timeout=10.0):
-        if self._helper is None:
-            raise BTLEException(BTLEException.INTERNAL_ERROR, "Helper not started (did you call start()?)")
+def process(self, timeout=10.0):
+if self._helper is None:
+raise BTLEException(BTLEException.INTERNAL_ERROR, "Helper not started (did you call start()?)")
 
-        start = time.time()
-        while True:
-            if timeout:
-                remain = start + timeout - time.time()
-                if remain <= 0.0: 
-                    break
-            else:
-                remain = None
+start = time.time()
+while True:
+if timeout:
+remain = start + timeout - time.time()
+if remain <= 0.0:
+break
+else:
+remain = None
 
-            resp = self._waitResp(['scan', 'stat'], remain)
-            if resp is None:
-                break
+resp = self._waitResp(['scan', 'stat'], remain)
+if resp is None:
+break
 
-            respType = resp['rsp'][0]
+respType = resp['rsp'][0]
 
-            if respType == 'stat':
-                # if scan ended, restart it
-                if resp['state'][0] == 'disc':
-                    self._mgmtCmd("scan")
+if respType == 'stat':
+# if scan ended, restart it
+if resp['state'][0] == 'disc':
+self._mgmtCmd("scan")
 
-            elif respType == 'scan':
-                # device found
-                addr = self._decode_address(resp) 
-                dev = self._find_or_create(addr)
+elif respType == 'scan':
+# device found
+addr = self._decode_address(resp)
+dev = self._find_or_create(addr)
 
-                isNewData = dev._update(resp)
+isNewData = dev._update(resp)
 
-                if self.delegate is not None:
-                    self.delegate.handleDiscovery(dev, (dev.updateCount <= 1), isNewData)
+if self.delegate is not None:
+self.delegate.handleDiscovery(dev, (dev.updateCount <= 1), isNewData)
 
-                if self.mac is not None and dev.addr == self.mac:
-                    break
+if self.mac is not None and dev.addr == self.mac:
+break
 
-            else:
-                raise BTLEException(BTLEException.INTERNAL_ERROR, "Unexpected response: " + respType)
+else:
+raise BTLEException(BTLEException.INTERNAL_ERROR, "Unexpected response: " + respType)
 
 class ScanReceiver(DefaultDelegate):
-    def __init__(self, opts):
-        DefaultDelegate.__init__(self)
-        self.opts = opts
+def __init__(self, opts):
+DefaultDelegate.__init__(self)
+self.opts = opts
 
-    def _isBitSet( self, byteval, idx ):
-        return ((byteval&(1<<idx))!=0);
+def _isBitSet( self, byteval, idx ):
+return ((byteval&(1<<idx))!=0);
 
-    # http://www.argenox.com/a-ble-advertising-primer/
-    def _parseFlags( self, flags ):
-        bits  = []
-        flags = int( flags, 16 )
+# http://www.argenox.com/a-ble-advertising-primer/
+def _parseFlags( self, flags ):
+bits  = []
+flags = int( flags, 16 )
 
-        if self._isBitSet( flags, 0 ):
-            bits.append( 'LE Limited Discoverable' )
+if self._isBitSet( flags, 0 ):
+bits.append( 'LE Limited Discoverable' )
 
-        if self._isBitSet( flags, 1 ):
-            bits.append( 'LE General Discoverable' )
+if self._isBitSet( flags, 1 ):
+bits.append( 'LE General Discoverable' )
 
-        if self._isBitSet( flags, 2 ):
-            bits.append( 'BR/EDR' )
+if self._isBitSet( flags, 2 ):
+bits.append( 'BR/EDR' )
 
-        if self._isBitSet( flags, 3 ):
-            bits.append( 'LE + BR/EDR Controller Mode' )
+if self._isBitSet( flags, 3 ):
+bits.append( 'LE + BR/EDR Controller Mode' )
 
-        if self._isBitSet( flags, 4 ):
-            bits.append( 'LE + BR/EDR Host Mode' )
+if self._isBitSet( flags, 4 ):
+bits.append( 'LE + BR/EDR Host Mode' )
 
-        return ', '.join(bits)
+return ', '.join(bits)
 
-    def handleDiscovery(self, dev, isNewDev, isNewData):
-        if not isNewDev:
-            return 
-        elif self.opts.mac is not None and dev.addr != self.opts.mac:
-            return 
-        elif dev.rssi < self.opts.sensitivity:
-            return
+def handleDiscovery(self, dev, isNewDev, isNewData):
+if not isNewDev:
+return
+elif self.opts.mac is not None and dev.addr != self.opts.mac:
+return
+elif dev.rssi < self.opts.sensitivity:
+return
+whenT=str(datetime.now())
+vendor = vendors.find(dev.addr)
+vlabel = yellow( vendor + ' ' ) if vendor is not None else str(dev.addr)
+clabel = green( 'yes' ) if dev.connectable else red( 'no' )
+dlabel = "(no data) " if not dev.scanData else ""
+title  = " %s (%s dBm) %s" % ( bold(dev.addr), dev.rssi, dlabel )
+outData = [whenT,dev.addr,dev.rssi,dlabel,vlabel,clabel]
+tdata  = [
+[ 'Vendor', vlabel ],
+[ 'Allows Connections', clabel ],
+]
 
-        vendor = vendors.find(dev.addr)
-        vlabel = yellow( vendor + ' ' ) if vendor is not None else '?'
-        clabel = green('yes') if dev.connectable else red( 'no' )
-        dlabel = "(no data) " if not dev.scanData else ""
-        title  = " %s (%s dBm) %s" % ( bold(dev.addr), dev.rssi, dlabel )
-        tdata  = [
-            [ 'Vendor', vlabel ],
-            [ 'Allows Connections', clabel ],
-        ]
+for ( tag, desc, val ) in dev.getScanData():
+max_width = 45
+if desc == 'Flags':
+outData.append(self._parseFlags(val))
+wrapped_string = 'n'.join(wrap(self._parseFlags(val), max_width))
+tdata.append([ 'Flags', wrapped_string])
+# short local name or complete local name
+elif tag in [8, 9]:
+try:
+outVal=desc +':' + val.decode('utf-8')
+outData.append(outVal)
+wrapped_string = 'n'.join(wrap(val.decode('utf-8'),max_width))
+tdata.append([ desc, yellow(wrapped_string) ])
+except UnicodeEncodeError:
+outVal=desc + ':' + repr(val)
+outData.append(outVal)
+wrapped_string = 'n'.join(wrap(repr(val),max_width))
+tdata.append([ desc, yellow(wrapped_string) ])
+else:
+outVal=desc + ':' + repr(val)
+outData.append(outVal)
+wrapped_string = 'n'.join(wrap(repr(val),max_width))
+tdata.append([ desc, wrapped_string ])
 
-        for ( tag, desc, val ) in dev.getScanData():
-            if desc == 'Flags':
 
-                wrapped_string = '\n'.join(wrap(self._parseFlags(val), 45))
-                tdata.append([ 'Flags', wrapped_string])
-
-            # short local name or complete local name
-            elif tag in [8, 9]:
-                try:
-                    tdata.append([ desc, yellow( val.decode('utf-8') ) ])
-                except UnicodeEncodeError:
-                    tdata.append([ desc, yellow( repr(val) ) ])
-            else:
-                tdata.append([ desc, repr(val) ])
-
-
-        table = SingleTable(tdata, title)
-        table.inner_heading_row_border = False
-
-        print table.table + "\n"
+table = SingleTable(tdata, title)
+table.inner_heading_row_border = False
+print table.table + "n"
+with open("out.csv","a") as f:
+wr = csv.writer(f)
+wr.writerow(outData)
 
 def start_scan(args):
-    vendors.load()
-    scanner = SmarterScanner(args.mac,args.hci).withDelegate(ScanReceiver(args))
+vendors.load()
+scanner = SmarterScanner(args.mac,args.hci).withDelegate(ScanReceiver(args))
 
-    if args.timeout == 0:
-        print "@ Continuous scanning [%d dBm of sensitivity] ...\n" % args.sensitivity
-    else:
-        print "@ Scanning for %ds [%d dBm of sensitivity] ...\n" % ( args.timeout, args.sensitivity )
+if args.timeout == 0:
+print "@ Continuous scanning [%d dBm of sensitivity] ...n" % args.sensitivity
+else:
+print "@ Scanning for %ds [%d dBm of sensitivity] ...n" % ( args.timeout, args.sensitivity )
 
-    return scanner.scan(args.timeout)
+return scanner.scan(args.timeout)
