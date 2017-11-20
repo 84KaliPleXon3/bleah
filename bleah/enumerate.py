@@ -20,10 +20,11 @@ import binascii
 import os
 import sys
 import string
+import csv
 import struct
 from terminaltables import SingleTable
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral, AssignedNumbers, UUID
-
+import datetime
 from bleah.scan import *
 from bleah.swag import *
 
@@ -340,7 +341,7 @@ def enumerate_device_properties(dev,args):
             props = char.propertiesToString().replace( 'WRITE', bold('WRITE') )
             hnd   = char.getHandle()
             value = deserialize_char( char, props )
-
+    
             tdata.append([ "%04x" % hnd, desc, props, value ])
 
             """
@@ -356,8 +357,16 @@ def enumerate_device_properties(dev,args):
                     break
 
                 tdata.append([ '%04x' % hnd, gray('    --'), gray('--'), binascii.b2a_hex(val).decode('utf-8') ])
+                outData.append([ '%04x' % hnd, gray('    --'), gray('--'), binascii.b2a_hex(val).decode('utf-8') ])
+
             """
 
         tdata.append([ '', '', '', '' ])
+    tstamp=datetime.now().isoformat("-").split(".")[0].replace(":","-")
+    tdata.append(["scanned at:",tstamp,'',''])
 
-    print "\n\n" + SingleTable(tdata).table
+   # print "\n\n" + SingleTable(tdata).table
+    f= open("/home/chip/dumps/bleah.txt",'a')
+    f.write(SingleTable(tdata).table)
+    f.write('\n')
+    f.close
